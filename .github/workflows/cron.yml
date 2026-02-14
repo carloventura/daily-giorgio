@@ -1,0 +1,31 @@
+name: Insta to Discord Thread
+on:
+  schedule:
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-insta:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Checkout
+      #   uses: actions/checkout@v4
+
+      # - name: Ripristina Memoria (Cache)
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: last_post.txt
+      #     key: insta-cache-${{ github.run_id }}
+      #     restore-keys: insta-cache-
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Esegui Script
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          THREAD_ID: ${{ secrets.THREAD_ID }}
+          # RSS_URL: ${{ secrets.RSS_URL }}
+        run: python script.py
