@@ -1,1 +1,128 @@
-HAKUNA MATATA
+# 📢 Daily Giorgio - RSS to Discord Notifier
+
+*Non ti perdere più nessun post di Giorgio!* ✨
+
+## Overview
+
+**Daily Giorgio** è un sistema automatizzato che monitora un feed RSS e notifica istantaneamente i nuovi post su un canale Discord. Perfetto per restare sempre aggiornato senza dover controllare manualmente ogni volta.
+
+Lo script gira su GitHub Actions ogni 3 ore durante il giorno (9-21) e usa un sistema di cache locale per evitare notifiche duplicate.
+
+## 🎯 Caratteristiche
+
+- ✅ Monitoraggio automatico del feed RSS
+- ✅ Notifiche istantanee su Discord via webhook
+- ✅ Protezione anti-duplicati con stato locale
+- ✅ Esecuzione programmata su GitHub Actions
+- ✅ Esecuzione manuale on-demand
+- ✅ Gestione robusta degli errori di rete
+
+## 🚀 Quick Start
+
+### Prerequisiti
+
+- Python 3.10+
+- Un repository GitHub
+- Un webhook Discord (per il thread target)
+- Un feed RSS valido
+
+### Setup Locale
+
+```bash
+# Clona il repository
+git clone <repo-url>
+cd daily-giorgio
+
+# Crea un ambiente virtuale
+python3 -m venv .venv
+source .venv/bin/activate  # su Windows: .venv\Scripts\activate
+
+# Installa le dipendenze
+pip install -r requirements.txt
+
+# Crea un file .env con i seguenti valori
+cat > .env << EOF
+WEBHOOK_URL=<your-discord-webhook-url>
+THREAD_ID=<your-discord-thread-id>
+RSS_URL=<your-rss-feed-url>
+EOF
+
+# Esegui lo script
+python script.py
+```
+
+## 🔧 Configurazione
+
+### Variabili d'Ambiente
+
+| Variabile | Descrizione | Esempio |
+|-----------|-------------|---------|
+| `WEBHOOK_URL` | URL del webhook Discord | `https://discord.com/api/webhooks/...` |
+| `THREAD_ID` | ID del thread Discord | `1234567890` |
+| `RSS_URL` | URL del feed RSS | `https://example.com/feed.json` |
+
+### GitHub Secrets
+
+Configura le stesse variabili come repository secrets su GitHub:
+
+1. Vai a **Settings** > **Secrets and variables** > **Actions**
+2. Aggiungi:
+   - `WEBHOOK_URL`
+   - `THREAD_ID`
+   - `RSS_URL`
+
+## 📋 Come Funziona
+
+```
+┌─────────────────┐
+│  GitHub Actions │
+└────────┬────────┘
+         │
+         ├─→ Fetch ultimo post da RSS
+         │
+         ├─→ Confronta con ultimo salvato
+         │
+         ├─→ Se nuovo → Invia a Discord
+         │
+         └─→ Aggiorna cache locale
+```
+
+### Flusso Logico
+
+1. **Recupero**: Lo script legge il feed RSS
+2. **Confronto**: Verifica se il post è già stato inviato
+3. **Notifica**: Se nuovo, invia il messaggio al webhook Discord
+4. **Salvataggio**: Aggiorna lo stato locale per evitare duplicati
+
+## ⏱️ Pianificazione
+
+Il workflow gira automaticamente:
+- **Ogni 3 ore** dalle 9 alle 21 (UTC)
+- **Manualmente** via `workflow_dispatch`
+
+Modifica il cron in `.github/workflows/cron.yml` per cambiare la frequenza.
+
+## 🐛 Troubleshooting
+
+### "Invalid URL 'None': No scheme supplied"
+Assicurati che `RSS_URL` sia configurato nei secrets di GitHub.
+
+### Webhook fallisce con status 204
+Lo status 204 indica successo! È la risposta attesa.
+
+### Notifiche duplicate
+Questo significa che il file `last_post.txt` non viene mantenuto correttamente. Verifica la configurazione della cache nel workflow.
+
+## 📦 Dipendenze
+
+Vedi `requirements.txt` per la lista completa. Principali:
+- `requests` - HTTP client
+- `python-dotenv` - Gestione variabili d'ambiente
+
+## 📝 Licenza
+
+Liberamente usabile e modificabile.
+
+---
+
+**Fatto con ❤️ per non perdere nemmeno un post!**

@@ -1,7 +1,7 @@
 name: Insta to Discord Thread
 on:
   schedule:
-    - cron: '0 */8 * * *'
+    - cron: '* 9-21/3 * * *'
   workflow_dispatch:
 
 jobs:
