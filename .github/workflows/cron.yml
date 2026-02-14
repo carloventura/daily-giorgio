@@ -11,12 +11,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Ripristina Memoria (Cache)
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: last_post.txt
-      #     key: insta-cache-${{ github.run_id }}
-      #     restore-keys: insta-cache-
+      - name: Ripristina Memoria (Cache)
+        uses: actions/cache@v3
+        with:
+          path: last_post.txt
+          key: insta-cache-${{ github.run_id }}
+          restore-keys: insta-cache-
 
       - name: Setup Python
         uses: actions/setup-python@v4

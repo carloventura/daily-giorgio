@@ -7,6 +7,7 @@ load_dotenv()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 THREAD_ID = os.getenv("THREAD_ID")
 RSS_URL = os.getenv("RSS_URL")
+FILE_MEMORIA = "last_post.txt"
 
 
 def post_to_thread(message):
@@ -26,13 +27,47 @@ def post_to_thread(message):
         print("Message posted successfully.")
     else:
         print(f"Failed to post message. Status code: {response.status_code}, Response: {response.text}")
+    return response
 
 def get_latest_post():
-    # try:
-    #     response = requests.get(RSS_URL)
-    # Placeholder for retrieving the last post from a file or database
-    return "This is the last post content."
+    try:
+        response = requests.get(RSS_URL, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+        if "items" in data and len(data["items"]) > 0:
+            latest_post = data["items"][0]
+            return latest_post.get("content", "No content available.")
+    except Exception as e:
+        print(f"Errore nel recupero RSS: {e}")
+    return None
+
+def main():
+    latest_url = get_latest_post()
+    if not latest_url:
+        return
+
+    # 1. Leggi l'ultimo post salvato per evitare duplicati
+    last_saved_url = ""
+    if os.path.exists(FILE_MEMORIA):
+        with open(FILE_MEMORIA, "r") as f:
+            last_saved_url = f.read().strip()
+
+    # 2. Confronta
+    if latest_url == last_saved_url:
+        print("Nessun nuovo post trovato. Chiudo.")
+        return
+
+    # 3. Se nuovo, invia a Discord Thread
+    print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
+    res = post_to_thread(f"📢 **Nuovo post di Giorgio Falco!**\n{latest_url}")
+    
+    if res.status_code == 204:
+        # 4. Aggiorna la memoria locale
+        with open(FILE_MEMORIA, "w") as f:
+            f.write(latest_url)
+        print("Inviato con successo.")
+    else:
+        print(f"Errore invio Discord: {res.status_code}")
 
 if __name__ == "__main__":
-    message = "Hello, this is a message posted to the thread!"
-    post_to_thread(message)
+    main()
