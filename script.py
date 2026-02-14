@@ -36,13 +36,15 @@ def get_latest_post(url):
         data = response.json()
         if "items" in data and len(data["items"]) > 0:
             latest_post = data["items"][0]
-            return latest_post.get("content", "No content available.")
+            return latest_post
     except Exception as e:
         print(f"Errore nel recupero RSS: {e}")
     return None
 
 def main():
-    latest_url = get_latest_post(RSS_URL)
+    latest_post = get_latest_post(RSS_URL)
+    latest_url = latest_post.get("url") if latest_post else None
+
     if not latest_url:
         return
 
@@ -59,7 +61,7 @@ def main():
 
     # 3. Se nuovo, invia a Discord Thread
     print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
-    res = post_to_thread(f"📢 **Nuovo post di Giorgio Falco!**\n{latest_url}", WEBHOOK_URL, THREAD_ID)
+    res = post_to_thread(f"📢 **Nuovo post di Giorgione!**\n{latest_url}", WEBHOOK_URL, THREAD_ID)
     
     if res.status_code == 204:
         # 4. Aggiorna la memoria locale
