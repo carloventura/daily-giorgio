@@ -8,8 +8,8 @@ jobs:
   check-insta:
     runs-on: ubuntu-latest
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       # - name: Ripristina Memoria (Cache)
       #   uses: actions/cache@v3
@@ -28,4 +28,4 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           THREAD_ID: ${{ secrets.THREAD_ID }}
           # RSS_URL: ${{ secrets.RSS_URL }}
-        run: python /script.py
+        run: python script.py
