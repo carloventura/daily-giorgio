@@ -10,8 +10,8 @@ RSS_URL = os.getenv("RSS_URL")
 FILE_MEMORIA = "last_post.txt"
 
 
-def post_to_thread(message):
-    if not WEBHOOK_URL or not THREAD_ID:
+def post_to_thread(message, webhook_url, thread_id):
+    if not webhook_url or not thread_id:
         print("WEBHOOK_URL and THREAD_ID must be set in environment variables.")
         return
 
@@ -19,7 +19,7 @@ def post_to_thread(message):
         "content": message,
     }
 
-    endpoint = f"{WEBHOOK_URL}?thread_id={THREAD_ID}"
+    endpoint = f"{webhook_url}?thread_id={thread_id}"
 
     response = requests.post(endpoint, json=payload)
 
@@ -29,9 +29,9 @@ def post_to_thread(message):
         print(f"Failed to post message. Status code: {response.status_code}, Response: {response.text}")
     return response
 
-def get_latest_post():
+def get_latest_post(url):
     try:
-        response = requests.get(RSS_URL, timeout=15)
+        response = requests.get(url, timeout=15)
         response.raise_for_status()
         data = response.json()
         if "items" in data and len(data["items"]) > 0:
@@ -42,7 +42,7 @@ def get_latest_post():
     return None
 
 def main():
-    latest_url = get_latest_post()
+    latest_url = get_latest_post(RSS_URL)
     if not latest_url:
         return
 
@@ -59,7 +59,7 @@ def main():
 
     # 3. Se nuovo, invia a Discord Thread
     print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
-    res = post_to_thread(f"📢 **Nuovo post di Giorgio Falco!**\n{latest_url}")
+    res = post_to_thread(f"📢 **Nuovo post di Giorgio Falco!**\n{latest_url}", WEBHOOK_URL, THREAD_ID)
     
     if res.status_code == 204:
         # 4. Aggiorna la memoria locale
