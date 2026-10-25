@@ -1,8 +1,14 @@
-name: Insta to Discord Thread
+name: Insta to Discord Channel
 on:
   schedule:
     - cron: '5 8-20/3 * * *'
   workflow_dispatch:
+    inputs:
+      force_publish:
+        description: "Pubblica comunque l'ultimo post (solo avvio manuale)"
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   check-insta:
@@ -29,6 +35,6 @@ jobs:
       - name: Esegui Script
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-          THREAD_ID: ${{ secrets.THREAD_ID }}
           RSS_URL: ${{ secrets.RSS_URL }}
+          FORCE_PUBLISH: ${{ inputs.force_publish || 'false' }}
         run: python script.py

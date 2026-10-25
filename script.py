@@ -6,6 +6,7 @@ load_dotenv()
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 RSS_URL = os.getenv("RSS_URL")
+FORCE_PUBLISH = os.getenv("FORCE_PUBLISH", "false").lower() == "true"
 FILE_MEMORIA = "last_post.txt"
 
 
@@ -51,12 +52,12 @@ def main():
         with open(FILE_MEMORIA, "r") as f:
             last_saved_url = f.read().strip()
 
-    # 2. Confronta
-    if latest_url == last_saved_url:
+    # 2. Confronta, a meno che la pubblicazione non sia stata forzata manualmente
+    if latest_url == last_saved_url and not FORCE_PUBLISH:
         print("Nessun nuovo post trovato. Chiudo.")
         return
 
-    # 3. Se nuovo, invia al canale principale Discord
+    # 3. Invia al canale principale Discord
     print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
     res = post_to_channel(f"📢 **Nuovo post di Kevin!**\n{latest_url}", WEBHOOK_URL)
 
