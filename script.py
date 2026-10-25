@@ -5,23 +5,20 @@ from dotenv import load_dotenv
 load_dotenv()
 
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
-THREAD_ID = os.getenv("THREAD_ID")
 RSS_URL = os.getenv("RSS_URL")
 FILE_MEMORIA = "last_post.txt"
 
 
-def post_to_thread(message, webhook_url, thread_id):
-    if not webhook_url or not thread_id:
-        print("WEBHOOK_URL and THREAD_ID must be set in environment variables.")
-        return
+def post_to_channel(message, webhook_url):
+    if not webhook_url:
+        print("WEBHOOK_URL must be set in environment variables.")
+        return None
 
     payload = {
         "content": message,
     }
 
-    endpoint = f"{webhook_url}?thread_id={thread_id}"
-
-    response = requests.post(endpoint, json=payload)
+    response = requests.post(webhook_url, json=payload)
 
     if response.status_code == 204:
         print("Message posted successfully.")
@@ -59,16 +56,16 @@ def main():
         print("Nessun nuovo post trovato. Chiudo.")
         return
 
-    # 3. Se nuovo, invia a Discord Thread
+    # 3. Se nuovo, invia al canale principale Discord
     print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
-    res = post_to_thread(f"📢 **Nuovo post di Giorgione!**\n{latest_url}", WEBHOOK_URL, THREAD_ID)
-    
-    if res.status_code == 204:
+    res = post_to_channel(f"📢 **Nuovo post di Kevin!**\n{latest_url}", WEBHOOK_URL)
+
+    if res and res.status_code == 204:
         # 4. Aggiorna la memoria locale
         with open(FILE_MEMORIA, "w") as f:
             f.write(latest_url)
         print("Inviato con successo.")
-    else:
+    elif res:
         print(f"Errore invio Discord: {res.status_code}")
 
 if __name__ == "__main__":
