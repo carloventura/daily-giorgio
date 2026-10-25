@@ -1,3 +1,5 @@
+import html
+import re
 import requests
 import os
 from dotenv import load_dotenv
@@ -10,16 +12,39 @@ FORCE_PUBLISH = os.getenv("FORCE_PUBLISH", "false").lower() == "true"
 FILE_MEMORIA = "last_post.txt"
 
 
-def post_to_channel(message, webhook_url):
+def post_to_channel(post, webhook_url):
     if not webhook_url:
         print("WEBHOOK_URL must be set in environment variables.")
         return None
 
+    caption_html = post.get("content_html", "")
+    caption = html.unescape(re.sub(r"<[^>]+>", "", caption_html)).strip()
+    caption = re.sub(r"\n{3,}", "\n\n", caption)
+    if len(caption) > 4096:
+        caption = caption[:4093] + "..."
+
+    thumbnail = post.get("_rssbridge", {}).get("thumbnail")
+    if not thumbnail and post.get("attachments"):
+        thumbnail = post["attachments"][0].get("url")
+
+    embed = {
+        "title": post.get("title", "Nuovo post di Kevin!"),
+        "url": post.get("url"),
+        "description": caption or "Nuovo post su Instagram",
+        "color": 0xE1306C,
+        "author": {
+            "name": post.get("author", {}).get("name", "kevinbele_hy"),
+        },
+    }
+    if thumbnail:
+        embed["image"] = {"url": thumbnail}
+
     payload = {
-        "content": message,
+        "content": "📢 **Nuovo post di Kevin!**",
+        "embeds": [embed],
     }
 
-    response = requests.post(webhook_url, json=payload)
+    response = requests.post(webhook_url, json=payload, timeout=15)
 
     if response.status_code == 204:
         print("Message posted successfully.")
@@ -59,7 +84,7 @@ def main():
 
     # 3. Invia al canale principale Discord
     print(f"Nuovo post trovato: {latest_url}. Invio a Discord...")
-    res = post_to_channel(f"📢 **Nuovo post di Kevin!**\n{latest_url}", WEBHOOK_URL)
+    res = post_to_channel(latest_post, WEBHOOK_URL)
 
     if res and res.status_code == 204:
         # 4. Aggiorna la memoria locale
